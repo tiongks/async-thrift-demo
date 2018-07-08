@@ -41,6 +41,11 @@
 			<artifactId>jaeger-tracerresolver</artifactId>
 			<version>${jaeger.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>io.opentracing.contrib</groupId>
+			<artifactId>opentracing-thrift</artifactId>
+			<version>0.0.7</version>
+		</dependency>
 		<!-- Unit Testing -->
 		<dependency>
 			<groupId>junit</groupId>

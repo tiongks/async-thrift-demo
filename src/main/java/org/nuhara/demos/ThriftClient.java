@@ -2,6 +2,7 @@ package org.nuhara.demos;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.logging.Logger;
 
 import org.apache.thrift.TException;
@@ -15,14 +16,17 @@ import org.apache.thrift.transport.TTransportException;
 import org.nuhara.demos.thrift.ISOService;
 import org.nuhara.demos.thrift.Message;
 
-import io.opentracing.Tracer;
 import io.opentracing.Span;
+import io.opentracing.Tracer;
+import io.opentracing.thrift.SpanProtocol;
+import io.opentracing.thrift.TracingAsyncMethodCallback;
 
 public class ThriftClient {
 	
 	final static Logger logger = Logger.getLogger(ThriftClient.class.getCanonicalName());
 	final static int NUM_MESSAGES = 10; 
 	final ArrayList<Message> responseList = new ArrayList<>();
+	Tracer tracer;
 	Span span;
 	
 	public static void main(String[] args) {
@@ -33,21 +37,26 @@ public class ThriftClient {
 	private void run() {
 		TNonblockingTransport transport = null;
 		try {
-			Tracer tracer = Tracing.initTracer("async-thrift-demo");
-			transport = new TNonblockingSocket("localhost", 9090);
+			tracer = Tracing.initTracer(Tracing.APP_NAME);
+
 			TAsyncClientManager clientManager = new TAsyncClientManager();
+			transport = new TNonblockingSocket("localhost", 9090);
+			TBinaryProtocol binProt = new TBinaryProtocol(transport);
 			TProtocolFactory protocolFactory = new TBinaryProtocol.Factory();
-			ISOService.AsyncClient client = new ISOService.AsyncClient(protocolFactory, clientManager, transport);
+			SpanProtocol.Factory spanFactory = new SpanProtocol.Factory(protocolFactory, tracer, false);
 			
 			for (int i = 1; i <= NUM_MESSAGES; i++) {
 				
+				ISOService.AsyncClient client = new ISOService.AsyncClient(spanFactory, clientManager, transport);
+				
 				Message message = new Message(Integer.toString(i*100), "From the Client", "");
 				
-//				logger.info("Sending: " + message);
-				System.out.println("Sending: " + message);
-
+				logger.info("Sending: " + message);
+				
 				span = tracer.buildSpan(message.getMti()).start();
-				client.process(message, new ProcessorCallback());
+				TracingAsyncMethodCallback<Message> tracingCallback = 
+						new TracingAsyncMethodCallback<>(new ProcessorCallback(), spanFactory);
+				client.process(message, tracingCallback);
 				Thread.sleep(200);
 			}
 			

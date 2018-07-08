@@ -6,9 +6,10 @@ import org.nuhara.demos.thrift.ISOService;
 import org.nuhara.demos.thrift.Message;
 
 public class ISOAsyncProcessorImpl implements ISOService.AsyncIface {
-
+	
 	@Override
 	public void process(Message message, AsyncMethodCallback<Message> resultHandler) throws TException {
+		System.out.println("Async Processor.");
 		resultHandler.onComplete(message);
 	}
 

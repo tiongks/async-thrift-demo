@@ -2,7 +2,6 @@ package org.nuhara.demos;
 
 import java.util.Random;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 import org.apache.thrift.TException;
@@ -21,14 +20,14 @@ public class ISOProcessorImpl implements ISOService.Iface {
 		
 		logger.info("Message Received: " + message.getMti() + "-" + message.getMessage());
 		
-		executor = Executors.newSingleThreadExecutor();
+//		executor = Executors.newSingleThreadExecutor();
 		
-		ISOService.AsyncIface asyncService = new ISOAsyncProcessorImpl();
-		ResponseHandler<Message> responseHandler = new ResponseHandler<>();
-		asyncService.process(message, responseHandler);
+//		ISOService.AsyncIface asyncService = new ISOAsyncProcessorImpl();
+//		ResponseHandler<Message> responseHandler = new ResponseHandler<>();
+//		asyncService.process(message, responseHandler);
 		
-//		message.setMessage("From the Server");
-//		message.setResponseCode("00");
+		message.setMessage("From the Server.");
+		message.setResponseCode("00");
 //		 introduce some randomness in processing time so that response is not returned in order
 //		try {
 //			Thread.sleep(random.nextInt(20)*10);
