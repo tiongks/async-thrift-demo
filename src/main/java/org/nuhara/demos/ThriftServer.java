@@ -52,7 +52,7 @@ public class ThriftServer {
 		try {
 			TServerTransport transport = new TServerSocket(9090);
 			TServer server = new TSimpleServer(new TServer.Args(transport).processor(processor));
-			logger.info("Starting Server.");
+			logger.info("Starting Thrift Simple Server.");
 			server.serve();
 		} catch (TTransportException e) {
 			// TODO Auto-generated catch block
@@ -71,7 +71,7 @@ public class ThriftServer {
 //			args.processorFactory(new TProcessorFactory(processor));
 			args.processor(spanProcessor);
 			TServer server = new TNonblockingServer(args);
-			logger.info("Starting Non-Blocking Server.");
+			logger.info("Starting Thrift Non-Blocking Server.");
 			server.serve();
 		} catch (TTransportException e) {
 			// TODO Auto-generated catch block
