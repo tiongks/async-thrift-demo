@@ -32,7 +32,7 @@ public class ThriftServer {
 	public static void main(String[] args) {
 		processor = new ISOService.Processor<ISOService.Iface>(new ISOProcessorImpl());
 		
-		asyncProcessor = new ISOService.AsyncProcessor<ISOService.AsyncIface>(new ISOAsyncProcessorImpl());
+//		asyncProcessor = new ISOService.AsyncProcessor<ISOService.AsyncIface>(new ISOAsyncProcessorImpl());
 		
 //		Runnable runnable = new Runnable() {
 //			@Override

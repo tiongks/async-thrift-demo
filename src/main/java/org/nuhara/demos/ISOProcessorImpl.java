@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
+import org.nuhara.demos.kafka.TxnProducer;
 import org.nuhara.demos.thrift.ISOService;
 import org.nuhara.demos.thrift.Message;
 
@@ -25,6 +26,9 @@ public class ISOProcessorImpl implements ISOService.Iface {
 //		ISOService.AsyncIface asyncService = new ISOAsyncProcessorImpl();
 //		ResponseHandler<Message> responseHandler = new ResponseHandler<>();
 //		asyncService.process(message, responseHandler);
+
+		TxnProducer txnProducer = new TxnProducer();
+		txnProducer.sendMessage(message.getMti(), message.getMessage());
 		
 		message.setMessage("From the Server.");
 		message.setResponseCode("00");
