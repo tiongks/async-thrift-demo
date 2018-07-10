@@ -19,7 +19,17 @@ public class MessageProcessor implements Processor<String, String> {
 
 	@Override
 	public void process(String key, String value) {
-		logger.info("Now Processing: " + key + "<->" + value);
+		logger.info("Now Processing: " + key + "->" + value);
+		for (int i = 1; i <= 10; i++) {
+			System.out.println("Pretending to do something for: " + key);
+			try {
+				Thread.sleep(200);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		logger.info("Exiting process stage for: " + key + "->" + value);
 	}
 
 	@Override

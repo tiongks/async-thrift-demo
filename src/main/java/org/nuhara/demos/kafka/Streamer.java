@@ -25,11 +25,12 @@ public class Streamer {
 
 		Properties consumerConfig = new Properties();
 		consumerConfig.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-//		consumerConfig.put(ConsumerConfig.GROUP_ID_CONFIG, "C0");
+		consumerConfig.put(ConsumerConfig.GROUP_ID_CONFIG, "group-0");
 		consumerConfig.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-		consumerConfig.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
+		consumerConfig.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
 		consumerConfig.put(StreamsConfig.APPLICATION_ID_CONFIG, Tracing.APP_NAME);
 		consumerConfig.put(StreamsConfig.CLIENT_ID_CONFIG, "stream-consumer");
+		consumerConfig.put(StreamsConfig.PROCESSING_GUARANTEE_CONFIG, "exactly_once");
 //		consumerConfig.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, Serdes.String().getClass().getName());
 //		consumerConfig.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, Serdes.String().getClass().getName());
 		
