@@ -23,7 +23,7 @@ public class MessageProcessor implements Processor<String, String> {
 		for (int i = 1; i <= 10; i++) {
 			System.out.println("Pretending to do something for: " + key);
 			try {
-				Thread.sleep(200);
+				Thread.sleep(100);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
