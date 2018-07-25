@@ -56,6 +56,7 @@ public class ThriftClient {
 				span = tracer.buildSpan(message.getMti()).start();
 				TracingAsyncMethodCallback<Message> tracingCallback = 
 						new TracingAsyncMethodCallback<>(new ProcessorCallback(), spanFactory);
+				
 				client.process(message, tracingCallback);
 				Thread.sleep(200);
 			}

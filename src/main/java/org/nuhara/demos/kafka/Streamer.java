@@ -28,6 +28,7 @@ public class Streamer {
 		consumerConfig.put(ConsumerConfig.GROUP_ID_CONFIG, "group-0");
 		consumerConfig.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 		consumerConfig.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
+		consumerConfig.put(ConsumerConfig.ISOLATION_LEVEL_CONFIG, "read_committed");
 		consumerConfig.put(StreamsConfig.APPLICATION_ID_CONFIG, Tracing.APP_NAME);
 		consumerConfig.put(StreamsConfig.CLIENT_ID_CONFIG, "stream-consumer");
 		consumerConfig.put(StreamsConfig.PROCESSING_GUARANTEE_CONFIG, "exactly_once");
