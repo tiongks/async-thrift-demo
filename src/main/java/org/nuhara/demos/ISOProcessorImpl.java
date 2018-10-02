@@ -8,6 +8,7 @@ import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 import org.nuhara.demos.thrift.ISOService;
 import org.nuhara.demos.thrift.Message;
+import org.nuhara.demos.thrift.Response;
 
 public class ISOProcessorImpl implements ISOService.Iface {
 
@@ -16,9 +17,11 @@ public class ISOProcessorImpl implements ISOService.Iface {
 	Executor executor;
 
 	@Override
-	public Message process(Message message) throws TException {
+	public Response process(Message message) throws TException {
 		
 		logger.info("Message Received: " + message.getMti() + "-" + message.getMessage());
+		
+		Response response = new Response();
 		
 //		executor = Executors.newSingleThreadExecutor();
 		
@@ -26,23 +29,21 @@ public class ISOProcessorImpl implements ISOService.Iface {
 //		ResponseHandler<Message> responseHandler = new ResponseHandler<>();
 //		asyncService.process(message, responseHandler);
 		
-		message.setMessage("From the Server.");
-		message.setResponseCode("00");
+		response.setResponseCode("00");
 //		 introduce some randomness in processing time so that response is not returned in order
 //		try {
 //			Thread.sleep(random.nextInt(20)*10);
 //		} catch (InterruptedException e) {
 //			e.printStackTrace();
 //		}
-		return message;
+		return response;
 	}
 
 	class ResponseHandler<Messasge> implements AsyncMethodCallback<Message> {
 
 		@Override
-		public void onComplete(Message response) {
-			response.setMessage("From the Server.");
-			response.setResponseCode("00");
+		public void onComplete(Message message) {
+			message.setMessage("From the Server.");
 		}
 
 		@Override

@@ -2,7 +2,7 @@ package org.nuhara.demos;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 import org.apache.thrift.TException;
@@ -15,6 +15,7 @@ import org.apache.thrift.transport.TNonblockingTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.nuhara.demos.thrift.ISOService;
 import org.nuhara.demos.thrift.Message;
+import org.nuhara.demos.thrift.Response;
 
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -25,7 +26,7 @@ public class ThriftClient {
 	
 	final static Logger logger = Logger.getLogger(ThriftClient.class.getCanonicalName());
 	final static int NUM_MESSAGES = 10; 
-	final ArrayList<Message> responseList = new ArrayList<>();
+	final ArrayList<Response> responseList = new ArrayList<>();
 	Tracer tracer;
 	Span span;
 	
@@ -49,12 +50,11 @@ public class ThriftClient {
 				
 				ISOService.AsyncClient client = new ISOService.AsyncClient(spanFactory, clientManager, transport);
 				
-				Message message = new Message(Integer.toString(i*100), "From the Client", "");
-				
+				Message message = new Message(UUID.randomUUID().toString(), "mti", "message", 1L);
 				logger.info("Sending: " + message);
 				
 				span = tracer.buildSpan(message.getMti()).start();
-				TracingAsyncMethodCallback<Message> tracingCallback = 
+				TracingAsyncMethodCallback<Response> tracingCallback = 
 						new TracingAsyncMethodCallback<>(new ProcessorCallback(), spanFactory);
 				client.process(message, tracingCallback);
 				Thread.sleep(200);
@@ -76,13 +76,13 @@ public class ThriftClient {
 		}
 	}
 	
-	class ProcessorCallback implements AsyncMethodCallback<Message> {
+	class ProcessorCallback implements AsyncMethodCallback<Response> {
 
 		@Override
-		public void onComplete(Message response) {
+		public void onComplete(Response response) {
 			responseList.add(response);
 			span.finish();
-			logger.info("Response: " + response.getMti() + "-" + response.getMessage() + " " + response.getResponseCode());	
+			logger.info("Response: " +  response.getResponseCode());	
 		}
 
 		@Override
