@@ -8,10 +8,13 @@ import java.util.logging.Logger;
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 import org.apache.thrift.async.TAsyncClientManager;
-import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TCompactProtocol;
+import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
+import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TNonblockingSocket;
 import org.apache.thrift.transport.TNonblockingTransport;
+import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransportException;
 import org.nuhara.demos.thrift.ISOService;
 import org.nuhara.demos.thrift.Message;
@@ -19,13 +22,12 @@ import org.nuhara.demos.thrift.Response;
 
 import io.opentracing.Span;
 import io.opentracing.Tracer;
-import io.opentracing.thrift.SpanProtocol;
-import io.opentracing.thrift.TracingAsyncMethodCallback;
 
 public class ThriftClient {
 	
 	final static Logger logger = Logger.getLogger(ThriftClient.class.getCanonicalName());
-	final static int NUM_MESSAGES = 10; 
+	final static int NUM_MESSAGES = 10;
+	final TSocket socket = new TSocket("localhost", 9090);
 	final ArrayList<Response> responseList = new ArrayList<>();
 	Tracer tracer;
 	Span span;
@@ -36,43 +38,54 @@ public class ThriftClient {
 	}
 	
 	private void run() {
-		TNonblockingTransport transport = null;
+		TNonblockingTransport nonBlockingTransport = null;
+		TFramedTransport framedTransport  = null;
 		try {
 			tracer = Tracing.initTracer(Tracing.APP_NAME);
-
+			
+			nonBlockingTransport = new TNonblockingSocket("localhost", 9090);
+			framedTransport = new TFramedTransport(socket);
+			TProtocol protocol = new TCompactProtocol(framedTransport);
+//			TProtocol protocol = new TBinaryProtocol(framedTransport);
+			
+			framedTransport.open();
+			
 			TAsyncClientManager clientManager = new TAsyncClientManager();
-			transport = new TNonblockingSocket("localhost", 9090);
-			TBinaryProtocol binProt = new TBinaryProtocol(transport);
-			TProtocolFactory protocolFactory = new TBinaryProtocol.Factory();
-			SpanProtocol.Factory spanFactory = new SpanProtocol.Factory(protocolFactory, tracer, false);
+			TProtocolFactory protocolFactory = new TCompactProtocol.Factory();
+//			TBinaryProtocol binProt = new TBinaryProtocol(framedTransport);
 			
 			for (int i = 1; i <= NUM_MESSAGES; i++) {
 				
-				ISOService.AsyncClient client = new ISOService.AsyncClient(spanFactory, clientManager, transport);
+				ISOService.AsyncClient asyncClient = new ISOService.AsyncClient(protocolFactory, clientManager, nonBlockingTransport);
 				
-				Message message = new Message(UUID.randomUUID().toString(), "mti", "message", 1L);
+//				ISOService.Client client = new ISOService.Client(protocol);
+				
+				Message message = new Message(UUID.randomUUID().toString(), "mti" + i, "message: " + i, 1L);
 				logger.info("Sending: " + message);
 				
 				span = tracer.buildSpan(message.getMti()).start();
-				TracingAsyncMethodCallback<Response> tracingCallback = 
-						new TracingAsyncMethodCallback<>(new ProcessorCallback(), spanFactory);
-				client.process(message, tracingCallback);
-				Thread.sleep(200);
+//				client.process(message);
+				ProcessorCallback resultHandler = new ProcessorCallback();
+				asyncClient.process(message, resultHandler);
+				Thread.sleep(100);
 			}
 			
-			while (responseList.size() < NUM_MESSAGES) {
+			while (responseList.size() < NUM_MESSAGES) { 
 				Thread.sleep(10);
 			}
 		} catch (TTransportException e) {
 			e.printStackTrace();
 		} catch (TException e) {
 			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} finally {
-			transport.close();
+			if (framedTransport != null) {
+				framedTransport.close();
+			}
 		}
 	}
 	
@@ -80,9 +93,8 @@ public class ThriftClient {
 
 		@Override
 		public void onComplete(Response response) {
-			responseList.add(response);
-			span.finish();
-			logger.info("Response: " +  response.getResponseCode());	
+//			responseList.add(response);
+			logger.info("Response: " +  response.getMessageId() + " : " + response.getResponseCode());	
 		}
 
 		@Override

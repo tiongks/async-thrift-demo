@@ -4,6 +4,7 @@ import java.util.logging.Logger;
 
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.server.TNonblockingServer;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TSimpleServer;
@@ -13,8 +14,6 @@ import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TServerTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.nuhara.demos.thrift.ISOService;
-import org.nuhara.demos.thrift.ISOService.AsyncIface;
-import org.nuhara.demos.thrift.ISOService.AsyncProcessor;
 import org.nuhara.demos.thrift.ISOService.Iface;
 import org.nuhara.demos.thrift.ISOService.Processor;
 
@@ -67,6 +66,7 @@ public class ThriftServer {
 			TNonblockingServerSocket socket = new TNonblockingServerSocket(9090);
 			TNonblockingServer.Args args = new TNonblockingServer.Args(socket);
 			args.protocolFactory(new TBinaryProtocol.Factory());
+			args.protocolFactory(new TCompactProtocol.Factory());
 			args.transportFactory(new TFramedTransport.Factory());
 //			args.processorFactory(new TProcessorFactory(processor));
 			args.processor(spanProcessor);
