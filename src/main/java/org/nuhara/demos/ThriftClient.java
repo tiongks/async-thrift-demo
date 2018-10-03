@@ -3,6 +3,10 @@ package org.nuhara.demos;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import org.apache.thrift.TException;
@@ -40,6 +44,11 @@ public class ThriftClient {
 	private void run() {
 		TNonblockingTransport nonBlockingTransport = null;
 		TFramedTransport framedTransport  = null;
+		
+
+		ExecutorService executor = new ThreadPoolExecutor(NUM_MESSAGES, NUM_MESSAGES, 1000, TimeUnit.MILLISECONDS, 
+				new LinkedBlockingQueue<>());
+		
 		try {
 			tracer = Tracing.initTracer(Tracing.APP_NAME);
 			
@@ -65,14 +74,21 @@ public class ThriftClient {
 				
 				span = tracer.buildSpan(message.getMti()).start();
 //				client.process(message);
-				ProcessorCallback resultHandler = new ProcessorCallback();
-				asyncClient.process(message, resultHandler);
-				Thread.sleep(100);
+				
+				Runnable runnableTask = () -> {
+				    try {
+						ProcessorCallback resultHandler = new ProcessorCallback();
+						asyncClient.process(message, resultHandler);
+				    } catch (TException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				};
+				executor.execute(runnableTask);
+				
+				Thread.sleep(500);
 			}
 			
-			while (responseList.size() < NUM_MESSAGES) { 
-				Thread.sleep(10);
-			}
 		} catch (TTransportException e) {
 			e.printStackTrace();
 		} catch (TException e) {
